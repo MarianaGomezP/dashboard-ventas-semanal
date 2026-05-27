@@ -95,6 +95,12 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
   letter-spacing:.05em
 }
 
+/* ── MODO SEMANA ── */
+.modo-row{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.modo-btn{padding:.32rem .75rem;font-size:.62rem;font-weight:700;font-family:var(--sans);background:none;border:none;color:var(--t3);cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.modo-btn.on{background:var(--dark-green);color:#fff}
+.modo-btn:hover:not(.on){color:var(--t1);background:var(--surface2)}
+
 /* ── MAIN ── */
 .main{max-width:1640px;margin:0 auto;padding:2rem 2rem 5rem}
 
@@ -328,6 +334,10 @@ canvas{max-width:100%;display:block}
         <button class="vtab on" id="vt-gerencia" onclick="setView('gerencia',this)">Gerencia General</button>
         <button class="vtab" id="vt-ceco" onclick="setView('ceco',this)">Por Centro Comercial</button>
       </div>
+      <div class="modo-row">
+        <button class="modo-btn on" id="modo-unico" onclick="setModo(false)">Sem. única</button>
+        <button class="modo-btn" id="modo-acum" onclick="setModo(true)">Comparar</button>
+      </div>
       <div class="pill-row" id="sem-pills"></div>
       <select class="sel" id="foco-sel" onchange="render()">
         <option value="all">Todas las marcas</option>
@@ -498,6 +508,7 @@ const D = {{ data | tojson }};
 const CC = ['#0099e1','#ffd13f','#00ad68','#ff7c00','#b21e28','#0d5938','#9d4edd','#ff006e'];
 let semanasActivas = [D.ultima_semana];
 let semana = D.ultima_semana; // max de semanasActivas, para etiquetas de display
+let modoAcumulado = false;   // false=semana única, true=comparar/acumular
 let view   = 'gerencia';
 let ceco   = D.cecos[0];
 let charts = {};
@@ -651,13 +662,26 @@ function resetSem(){
 }
 
 function toggleSem(s){
-  if(semanasActivas.includes(s)){
-    if(semanasActivas.length===1) return;
-    semanasActivas=semanasActivas.filter(x=>x!==s);
+  if(modoAcumulado){
+    if(semanasActivas.includes(s)){
+      if(semanasActivas.length===1) return;
+      semanasActivas=semanasActivas.filter(x=>x!==s);
+    } else {
+      semanasActivas=[...semanasActivas,s];
+    }
   } else {
-    semanasActivas=[...semanasActivas,s];
+    semanasActivas=[s];
   }
   semana=Math.max(...semanasActivas);
+  buildPills();
+  render();
+}
+
+function setModo(acumulado){
+  modoAcumulado=acumulado;
+  if(!acumulado && semanasActivas.length>1) semanasActivas=[semana];
+  document.getElementById('modo-unico').classList.toggle('on',!acumulado);
+  document.getElementById('modo-acum').classList.toggle('on',acumulado);
   buildPills();
   render();
 }
