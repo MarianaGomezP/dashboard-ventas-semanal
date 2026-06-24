@@ -909,7 +909,8 @@ function renderComparativoG(){
 }
 
 function renderTopMarcasG(){
-  let rows=D.por_marca.filter(r=>inSem(r)&&r.MarcaFoco==='SI');
+  let rows=D.por_marca.filter(r=>inSem(r));
+  rows=applyFoco(rows);
   rows=agruparMarcas(rows).filter(r=>r.venta>0&&r.venta_ant>0);
   rows=rows.map(r=>({...r,da:pct(r.venta,r.venta_ant)})).filter(r=>r.da!=null);
 
